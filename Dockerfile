@@ -1,87 +1,63 @@
-# Stage 1: Build Python environment
-FROM python:3.9-slim AS python-builder
+# Use an official Python runtime as a parent image
+FROM python:3.9-slim
 
-# Set working directory
-WORKDIR /app
+# Set environment variables
+ENV NODE_VERSION 14.x
+ENV DEBIAN_FRONTEND noninteractive
 
-# Copy and install Python dependencies
-COPY requirements.txt /app
-RUN pip install --no-cache-dir -r requirements.txt
-
-COPY bot.py /app
-
-# Stage 2: Build Node.js environment
-FROM node:14-slim AS node-builder
-
-# Set working directory
-WORKDIR /app
-
-# Install necessary system dependencies for Node.js
+# Install Node.js and other dependencies
 RUN apt-get update && apt-get install -y \
     curl \
-    wget \
     gnupg \
-    ca-certificates \
+    wget \
+    gconf-service \
     libasound2 \
     libatk1.0-0 \
-    libc6 \
-    libcairo2 \
     libcups2 \
     libdbus-1-3 \
-    libexpat1 \
-    libfontconfig1 \
-    libgcc1 \
-    libgconf-2-4 \
-    libgdk-pixbuf2.0-0 \
-    libglib2.0-0 \
     libgtk-3-0 \
-    libicu-dev \
-    libjpeg62-turbo \
     libnspr4 \
     libnss3 \
-    libpango-1.0-0 \
-    libpng16-16 \
-    libstdc++6 \
-    libx11-6 \
     libx11-xcb1 \
-    libxcb1 \
     libxcomposite1 \
     libxcursor1 \
     libxdamage1 \
-    libxext6 \
-    libxfixes3 \
-    libxi6 \
     libxrandr2 \
-    libxrender1 \
     libxss1 \
     libxtst6 \
+    fonts-liberation \
+    libappindicator1 \
+    libxss1 \
+    lsb-release \
     xdg-utils \
+    && curl -sL https://deb.nodesource.com/setup_${NODE_VERSION} | bash - \
+    && apt-get install -y nodejs \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy package.json and package-lock.json from current directory to /app in container
-COPY package.json package-lock.json /app/
+# Install Chrome for Puppeteer
+RUN wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add - \
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update \
+    && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Node.js dependencies
-RUN npm install --production
-
-# Stage 3: Final stage with runtime environment
-FROM python:3.9-slim
-
-# Set working directory
+# Set working directory in the container
 WORKDIR /app
 
-# Copy Python dependencies from the first stage
-COPY --from=python-builder /usr/local/ /usr/local/
+# Copy package.json and install Node.js dependencies
+COPY package.json /app/
+RUN npm install
 
-# Copy Node.js dependencies from the second stage
-COPY --from=node-builder /app/app
+# Copy Python requirements and install
+COPY requirements.txt /app/
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy Node.js scripts
-COPY image2.js /app/image2.js
-COPY newProj.js /app/newProj.js
+# Copy all other application files
+COPY . /app/
 
-# Set permissions for Node.js scripts
-RUN chmod +x /app/image2.js /app/newProj.js
+# Expose the port the app runs on
+EXPOSE 8080
 
-# Command to run the bot (adjust as per your setup)
+# Run Python application
 CMD ["python", "bot.py"]
