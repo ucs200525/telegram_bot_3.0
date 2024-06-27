@@ -69,7 +69,7 @@ def update_excel_with_date(file_path, sunrise_date, sunset_date, sunrise_next_da
 # Function to convert Excel to image using Node.js script with specific date
 def save_excel_as_image_with_nodejs_date(excel_file_path, output_image_path, sheet_name, date_str):
     try:
-        node_script = r'/app/telegram-bot_3.0/image2.js'  # Update this path to your Node.js script
+        node_script = r'/app/image2.js'  # Update this path to your Node.js script
         subprocess.run(['node', node_script, excel_file_path, sheet_name, output_image_path, date_str], check=True)
         logger.info(f"Image successfully saved to {output_image_path}")
     except Exception as e:
@@ -78,7 +78,7 @@ def save_excel_as_image_with_nodejs_date(excel_file_path, output_image_path, she
 # Function to get DrikPanchang screenshot using Node.js script with specific date
 def get_drikpanchang_screenshot_date(city, date, output_image_path):
     try:
-        node_script = r'/app/telegram-bot_3.0/newProj.js'  # Update this path to your Node.js script
+        node_script = r'/app/newProj.js'  # Update this path to your Node.js script
         subprocess.run(['node', node_script, city, date, output_image_path], check=True)
         logger.info(f"DrikPanchang screenshot successfully saved to {output_image_path}")
     except Exception as e:
@@ -263,9 +263,9 @@ async def cancel_command_handler(update: Update, context: CallbackContext):
 def main():
     # Prompt user to enter tokens and paths
     opencage_api_key = '699522e909454a09b82d1c728fc79925'
-    excel_file_path = r'/app/telegram-bot_3.0/Bharghava_Siddhanta_Panchangam.xlsx'
-    image_save_path = r'/app/telegram-bot_3.0/ExcelToImage.png'
-    drikpanchang_image_path = r'/app/telegram-bot_3.0/DrikPanchangImage.png'
+    excel_file_path = r'/app/Bharghava_Siddhanta_Panchangam.xlsx'
+    image_save_path = r'/app/ExcelToImage.png'
+    drikpanchang_image_path = r'/app/DrikPanchangImage.png'
     bot_token = '7274941037:AAHIWiU5yvfIzo7eJWPu9S5CeJIid6ATEyM'
 
     # Create the Application instance
