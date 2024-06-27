@@ -47,7 +47,7 @@ WORKDIR /app
 
 # Copy package.json and install Node.js dependencies
 COPY package.json /app/
-RUN npm install
+
 
 # Copy Python requirements and install
 COPY requirements.txt /app/
